@@ -94,7 +94,7 @@ import { getPatients } from './patient';
 import { replaceConditionalReferences, validateReferences } from './references';
 import { getFullUrl } from './response';
 import { RewriteMode, rewriteAttachments } from './rewrite';
-import { buildSearchExpression, searchImpl } from './search';
+import { buildSearchExpression, searchByReferenceImpl, searchImpl } from './search';
 import {
   Condition,
   DeleteQuery,
@@ -1086,6 +1086,14 @@ export class Repository extends BaseRepository implements FhirRepository<PoolCli
       this.logEvent(SearchInteraction, AuditEventOutcome.MinorFailure, err, undefined, searchRequest);
       throw err;
     }
+  }
+
+  async searchByReference<T extends Resource>(
+    searchRequest: SearchRequest<T>,
+    referenceField: string,
+    references: string[]
+  ): Promise<Record<string, T[]>> {
+    return searchByReferenceImpl<T>(this, searchRequest, referenceField, references);
   }
 
   /**
