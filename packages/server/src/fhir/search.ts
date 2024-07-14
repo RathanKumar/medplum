@@ -118,7 +118,8 @@ export async function searchByReferenceImpl<T extends Resource>(
   repo: Repository,
   searchRequest: SearchRequest<T>,
   referenceField: string,
-  references: string[]
+  references: string[],
+  options?: { disableFallback?: boolean }
 ): Promise<Record<string, T[]>> {
   validateSearchResourceTypes(repo, searchRequest);
   applyCountAndOffsetLimits(searchRequest);
@@ -148,7 +149,7 @@ export async function searchByReferenceImpl<T extends Resource>(
     addSortRules(builder, searchRequest);
     builder.limit(searchRequest.count);
   } catch (err) {
-    if (err instanceof NotSupportedError) {
+    if (!options?.disableFallback && err instanceof NotSupportedError) {
       return searchByReferenceFallbackImpl(repo, searchRequest, referenceField, references);
     } else {
       throw err;
@@ -1351,7 +1352,7 @@ function splitChainedSearch(chain: string): string[] {
   return params;
 }
 
-class NotSupportedError extends Error {}
+export class NotSupportedError extends Error {}
 
 export class SelectPerReferenceQuery extends AbstractSelectQuery {
   readonly joins: Join[];
